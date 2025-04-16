@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const protectedRoutes = require('./routes/protected');
+const canvasRoutes = require('./routes/canvasRoutes');
 dotenv.config();
 
 const app = express();
@@ -23,7 +24,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 
 app.use('/api', authRoutes);
 app.use('/api', protectedRoutes);
-
+app.use('/api/canvas', canvasRoutes);
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

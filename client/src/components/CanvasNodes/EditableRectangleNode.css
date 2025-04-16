@@ -1,0 +1,46 @@
+.editable-rectangle-node {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .node-title {
+    border: none;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+  }
+  
+  .node-description {
+    border: none;
+    font-size: 0.85rem;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    resize: none;
+    min-height: 40px;
+  }
+  
+  .node-title:focus,
+  .node-description:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  .text-updater-node {
+    padding: 10px;
+    border-radius: 8px;
+    background: white; /* or any solid background */
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    font-family: sans-serif;
+  }

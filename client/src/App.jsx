@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import { useNavigate } from 'react-router-dom';
 import TopBar from './components/TopBar';
 import { UserProvider } from './context/UserContext';
+import CanvasPage from './pages/CanvasPage';
 const App = () => {
   const [darkMode, setDarkMode] = useState(false)
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/canvas/:id" element={<CanvasPage />} />
         </Routes>
       </Box>
     </ThemeProvider>

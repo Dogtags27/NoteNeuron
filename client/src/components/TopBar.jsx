@@ -19,7 +19,8 @@ const TopBar = ({ darkMode, setDarkMode }) => {
         name: user.name || user.username || 'User',
         email: user.email || '',
       });
-      console.log(user.name, user.email);
+    } else {
+      setUserInfo(null);
     }
   }, [user]);
   return (

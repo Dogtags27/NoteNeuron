@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  TextField,
-  IconButton,
-  Tooltip,
-  Button,
-  useTheme
-} from '@mui/material';
-
-import SearchIcon from '@mui/icons-material/Search';
+import { Box, IconButton, Tooltip, Button, useTheme } from '@mui/material';
+import CreateCanvasDialog from '../components/CreateCanvasDialog';
 import AddIcon from '@mui/icons-material/Add';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchBar from '../components/SearchBar';
 
-const HomePageToolbar = () => {
+const HomePageToolbar = ({ onCanvasCreated }) => {
   const theme = useTheme();
   const [searchText, setSearchText] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [canvases, setCanvases] = useState([]); // assume canvas list state
 
   const handleSearch = () => {
     console.log('Searching for:', searchText);
@@ -49,38 +44,8 @@ const HomePageToolbar = () => {
       {/* Left section: Search + Create + Open */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         {/* 🔍 Search */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            background: theme.palette.background.paper,
-            borderRadius: 3,
-            boxShadow: `0 0 8px ${theme.palette.primary.main}`,
-            maxWidth: 300,
-            width: '100%',
-          }}
-        >
-          <TextField
-            fullWidth
-            variant="standard"
-            placeholder="Search canvases..."
-            InputProps={{
-              disableUnderline: true,
-              sx: {
-                px: 2,
-                py: 1,
-                fontSize: '1rem',
-                color: theme.palette.text.primary,
-                fontFamily: 'Arial, sans-serif'
-              }
-            }}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          />
-          <IconButton onClick={handleSearch} sx={{ color: theme.palette.primary.main }}>
-            <SearchIcon />
-          </IconButton>
+        <Box sx={{ maxWidth: 300, width: '100%' }}>
+          <SearchBar />
         </Box>
 
         {/* ➕ Create New Canvas */}
@@ -88,11 +53,19 @@ const HomePageToolbar = () => {
           variant="contained"
           startIcon={<AddIcon />}
           sx={textButtonStyle}
+          onClick={() => setOpenDialog(true)}
         >
           Create New Canvas
         </Button>
-
-        {/* 📂 Open Existing Canvas */}
+        <CreateCanvasDialog
+          open={openDialog}
+          handleClose={() => setOpenDialog(false)}
+          onCanvasCreated={(newCanvas) => {
+            setCanvases(prev => [newCanvas, ...prev]); // local usage (if needed)
+            if (onCanvasCreated) onCanvasCreated(newCanvas); // update Home.jsx state
+          }}
+        />
+        {/* 📂  */}
         <Button
           variant="outlined"
           startIcon={<FolderOpenIcon />}

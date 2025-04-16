@@ -18,7 +18,34 @@ import {
   import { motion } from 'framer-motion';
   import { useState } from 'react';
   
-  const NoteCard = ({ title, type, date, collaborators = [],index}) => {
+  const formatDate = (dateString) => {
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    };
+    return new Date(dateString).toLocaleString(undefined, options);
+  };
+
+  const getTimeAgo = (dateString) => {
+    const now = new Date();
+    const then = new Date(dateString);
+    const diffMs = now - then;
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+  
+    if (diffMinutes < 1) return 'just now';
+    if (diffMinutes < 60) return `opened ${diffMinutes} min${diffMinutes > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `opened ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 30) return `opened ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return `Opened ${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  };
+
+  const NoteCard = ({ title, type, date_created, date_last_opened, collaborators = [],index}) => {
     const theme = useTheme();
     const isPublic = type === 'Public';
     const [showCollaborators, setShowCollaborators] = useState(false);
@@ -28,7 +55,7 @@ import {
         case 'owner':
           return '#FFA500'; // Bright orange
         case 'editor':
-          return '#00FFFF'; // Neon blue
+          return '#0000FF'; // Neon blue
         case 'viewer':
           return '#90EE90'; // Light green
         default:
@@ -73,7 +100,7 @@ import {
           {title}
         </Typography>
         <Typography variant="caption" color="text.disabled">
-          Created on: {date}
+          Created on: {formatDate(date_created)}
         </Typography>
   
         <Box mt={2}>
@@ -119,6 +146,11 @@ import {
             </Box>
           </Collapse>
           </motion.div>
+        </Box>
+        <Box sx={{ position: 'absolute', bottom: 8, right: 12 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'none' }}>
+            {getTimeAgo(date_last_opened)}
+          </Typography>
         </Box>
       </Paper>
       </motion.div>

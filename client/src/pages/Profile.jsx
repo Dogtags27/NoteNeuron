@@ -2,12 +2,13 @@ import { Box, Typography, IconButton, Avatar, Button, Dialog, DialogTitle, Dialo
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
+import { UserContext } from '../context/UserContext';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({ username: '', email: '' });
+  const { user, clearUser } = useContext(UserContext);
   const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
@@ -18,7 +19,6 @@ const Profile = () => {
         });
         if (!res.ok) throw new Error();
         const data = await res.json();
-        setUserData({ username: data.username, email: data.email });
       } catch (err) {
         toast.error('Not authorized');
         navigate('/login');
@@ -33,6 +33,7 @@ const Profile = () => {
       method: 'POST',
       credentials: 'include',
     });
+    clearUser();
     toast.success('Logged out successfully');
     navigate('/login');
   };
@@ -46,8 +47,8 @@ const Profile = () => {
 
       <Box display="flex" flexDirection="column" alignItems="center" mt={6}>
         <Avatar sx={{ width: 120, height: 120, mb: 2 }} />
-        <Typography variant="h5" gutterBottom>{userData.username}</Typography>
-        <Typography variant="body1">{userData.email}</Typography>
+        <Typography variant="h5" gutterBottom>{user?.username}</Typography>
+        <Typography variant="body1">{user?.email}</Typography>
       </Box>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>

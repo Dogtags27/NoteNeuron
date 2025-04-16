@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  visible_sheets: {
+  type: [String], // array of sheet_id strings
+  default: [],
+},
 });
 
 // Create the User model
