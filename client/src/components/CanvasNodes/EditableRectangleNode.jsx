@@ -89,8 +89,20 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     startHoverTimer();
   };
   
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (event) => {
     clearHoverTimer();
+  
+    const hoveredElement = document.elementFromPoint(event.clientX, event.clientY);
+  
+    if (
+      hoveredElement &&
+      hoveredElement.classList.contains('description-popup')
+    ) {
+      // Cursor is still inside the popup, so don’t hide the description
+      return;
+    }
+  
+    // Proceed with fade/hide if not editing and cursor is outside the popup
     if (!isEditingRef.current) {
       setFadeDescription(true); // start fade on leave
       setTimeout(() => setShowDescription(false), 300); // hide after fade-out
@@ -118,7 +130,18 @@ function EditableRectangleNode({ id, data, isConnectable }) {
 
   useEffect(() => {
     const handleGlobalDragStart = (e) => {
+      // Check if the node being dragged is the current node
       if (e.detail.nodeId === id) {
+        // Get the current element under the mouse cursor
+        const clickedElement = document.elementFromPoint(e.clientX, e.clientY);
+  
+        // Check if the click is inside the description popup
+        if (clickedElement && clickedElement.closest('.description-popup')) {
+          // Do nothing if the click is inside the description popup
+          return;
+        }
+  
+        // If not inside the description popup, proceed with hiding the description
         setFadeDescription(true);
         setShowDescription(false); // 💥 immediate hide
         clearHoverTimer();
@@ -126,6 +149,7 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     };
   
     window.addEventListener('node-drag-start', handleGlobalDragStart);
+  
     return () => {
       window.removeEventListener('node-drag-start', handleGlobalDragStart);
     };
@@ -136,15 +160,25 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     <div className="editable-rectangle-node react-flow__node-resize" 
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onMouseDown={() => {
-        setIsDragging(true);
-        clearHoverTimer();
-        if (!isEditingRef.current) {
-            setFadeDescription(true); // Start fading
-            setTimeout(() => setShowDescription(false), 300); // Hide after fade
-        }
-        
-        }}
+        onMouseDown={(event) => {
+            setIsDragging(true);
+            clearHoverTimer();
+
+            // Find the clicked element
+            const clickedElement = document.elementFromPoint(event.clientX, event.clientY);
+
+            // If the clicked element is inside the description-popup, do nothing
+            if (clickedElement && clickedElement.closest('.description-popup')) {
+                return;
+            }
+
+            // Proceed with hiding the description if not editing
+            if (!isEditingRef.current) {
+                setFadeDescription(true); // Start fading the description
+                setTimeout(() => setShowDescription(false), 300); // Hide after fading
+            }
+            }}
+
 
         onMouseUp={() => {
         setIsDragging(false);
