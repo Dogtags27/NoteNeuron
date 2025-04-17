@@ -10,6 +10,7 @@ import './EditableRectangleNode.css';
 import { useTheme } from '@mui/material/styles';
 
 function EditableRectangleNode({ id, data, isConnectable }) {
+
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -18,6 +19,13 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     const [linkUrl, setLinkUrl] = useState(data.link || '');
     const colorPickerRef = useRef(null);
     const open = Boolean(anchorEl);
+    const [hovered, setHovered] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [showDescription, setShowDescription] = useState(false);
+    const [fadeDescription, setFadeDescription] = useState(false);
+    const hoverTimeoutRef = useRef(null);
+    const isEditingRef = useRef(false);
+
   const handleTitleChange = useCallback((e) => {
     data.updateNode(id, { title: e.target.value });
   }, [data, id]);
@@ -61,6 +69,34 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     }
     setConfirmOpen(false);
   };
+
+  const startHoverTimer = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (!isEditingRef.current) {
+        setFadeDescription(true);
+      }
+    }, 5000);
+  };
+  
+  const clearHoverTimer = () => {
+    clearTimeout(hoverTimeoutRef.current);
+    setFadeDescription(false);
+  };
+  
+  const handleMouseEnter = () => {
+    setShowDescription(true);
+    clearHoverTimer();
+    startHoverTimer();
+  };
+  
+  const handleMouseLeave = () => {
+    clearHoverTimer();
+    if (!isEditingRef.current) {
+      setFadeDescription(true); // start fade on leave
+      setTimeout(() => setShowDescription(false), 300); // hide after fade-out
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -80,16 +116,48 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     };
   }, [showColorPicker]);
 
+  useEffect(() => {
+    const handleGlobalDragStart = (e) => {
+      if (e.detail.nodeId === id) {
+        setFadeDescription(true);
+        setShowDescription(false); // 💥 immediate hide
+        clearHoverTimer();
+      }
+    };
+  
+    window.addEventListener('node-drag-start', handleGlobalDragStart);
+    return () => {
+      window.removeEventListener('node-drag-start', handleGlobalDragStart);
+    };
+  }, [id]);
+
   return (
     
-    <div className="editable-rectangle-node react-flow__node-resize" style={{
-        position: 'relative',
-        width: data.width || 200,
-        height: data.height || 120,
-        overflow: 'visible',
-        backgroundColor: theme.palette.mode === 'dark' ? data.darkColor || '#2e2e2e' : data.lightColor || '#f0f0f0',
-        zIndex: 0, // Make it a baseline
-        isolation: 'isolate', // 🔥 This is the secret sauce
+    <div className="editable-rectangle-node react-flow__node-resize" 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={() => {
+        setIsDragging(true);
+        clearHoverTimer();
+        if (!isEditingRef.current) {
+            setFadeDescription(true); // Start fading
+            setTimeout(() => setShowDescription(false), 300); // Hide after fade
+        }
+        
+        }}
+
+        onMouseUp={() => {
+        setIsDragging(false);
+        if (!isEditingRef.current) startHoverTimer();
+        }}
+        style={{
+            position: 'relative',
+            width: data.width || 250,
+            height: data.height || 150,
+            overflow: 'visible',
+            backgroundColor: theme.palette.mode === 'dark' ? data.darkColor || '#2e2e2e' : data.lightColor || '#f0f0f0',
+            zIndex: 0,
+            isolation: 'isolate', 
       }}
     >
         <NodeResizeControl
@@ -195,8 +263,8 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     ref={colorPickerRef}
     style={{
       position: 'absolute',
-      top: 36,
-      right: 0,
+      top: '-50px',
+      right: '-250px',
       backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
       color: theme.palette.text.primary,
       border: `1px solid ${theme.palette.divider}`,
@@ -278,8 +346,21 @@ function EditableRectangleNode({ id, data, isConnectable }) {
   </div>
 )}
         </div>
-      <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
-      
+        
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top-target"
+        isConnectable={isConnectable}
+        style={{ background: '#555' }}
+        />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        isConnectable={isConnectable}
+        style={{ background: '#555' }}
+        />
       <input
         className="nodrag node-title"
         type="text"
@@ -287,14 +368,73 @@ function EditableRectangleNode({ id, data, isConnectable }) {
         value={data.title}
         onChange={handleTitleChange}
       />
-      <textarea
-        className="nodrag node-description"
-        placeholder="Description"
-        value={data.description}
-        onChange={handleDescriptionChange}
-      />
+      {showDescription && (
+        <div
+            className={`description-popup ${fadeDescription ? 'fade' : ''}`}
+            style={{
+            position: 'absolute',
+            top: 0,
+            left: '100%',
+            marginLeft: 0,
+            minWidth: 200,
+            maxWidth: 300,
+            backgroundColor: theme.palette.mode === 'dark' ? '#222' : '#fff',
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+            borderRadius: '4px',
+            padding: '10px',
+            zIndex: 1000,
+            transition: 'transform 0.3s ease, opacity 0.3s ease',
+            transform: fadeDescription ? 'translateX(10px)' : 'translateX(0)',
+            opacity: fadeDescription ? 0 : 1,
+            }}
+        >
+            <textarea
+            value={data.description || ''}
+            onChange={(e) => {
+                isEditingRef.current = true;
+                handleDescriptionChange(e);
+                setFadeDescription(false);
+                clearHoverTimer();
+            }}
+            onBlur={() => {
+                isEditingRef.current = false;
+                if (showDescription) startHoverTimer();
+            }}
+            onFocus={() => {
+                isEditingRef.current = true;
+                clearHoverTimer();
+            }}
+            placeholder="Describe this node"
+            style={{
+                width: '100%',
+                minHeight: '20px',
+                border: 'none',
+                resize: 'none',
+                background: 'transparent',
+                outline: 'none',
+                color: theme.palette.text.primary,
+                fontFamily: 'inherit',
+                fontSize: '14px',
+            }}
+            />
+        </div>
+        )}
 
-      <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom-target"
+        isConnectable={isConnectable}
+        style={{ background: '#555' }}
+        />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        isConnectable={isConnectable}
+        style={{ background: '#555' }}
+        />
         <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
             <DialogTitle>Are you sure you want to delete this node?</DialogTitle>
             <DialogActions>
@@ -319,6 +459,30 @@ function EditableRectangleNode({ id, data, isConnectable }) {
             </IconButton>
         </Tooltip>
         )}
+        <Handle
+            type="target"
+            position={Position.Left}
+            id="left-target"
+            style={{ background: '#555' }}
+            />
+        <Handle
+            type="source"
+            position={Position.Left}
+            id="left-source"
+            style={{ background: '#555' }}
+        />
+        <Handle
+            type="target"
+            position={Position.Right}
+            id="right-target"
+            style={{ background: '#555' }}
+        />
+        <Handle
+            type="source"
+            position={Position.Right}
+            id="right-source"
+            style={{ background: '#555' }}
+        />
     </div>
   );
 }

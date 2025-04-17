@@ -1,20 +1,23 @@
 import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { ReactFlow, Background, addEdge, applyNodeChanges, useEdgesState } from 'reactflow';
+import { ReactFlow, Background, addEdge, applyNodeChanges, useEdgesState, Controls, MiniMap, ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 import '../styles/Canvas.css';
 import { useTheme } from '@mui/material/styles';
 import EditableRectangleNode from '../components/CanvasNodes/EditableRectangleNode';
+import EditableDiamondNode from '../components/CanvasNodes/EditableDiamondNode';
 import '../components/CanvasNodes/EditableRectangleNode.css';
 import { useCallback, useState, memo } from 'react';
 
 const nodeTypes = {
   editableRectangle: EditableRectangleNode,
+  editableDiamond: EditableDiamondNode,
 };
 
 const CanvasPage = () => {
   const { id } = useParams();
   const theme = useTheme();
+  const [isDraggingNode, setIsDraggingNode] = useState(false);
 
   const toolbar_classname = theme.palette.mode === 'light'
     ? 'toolbar-transparent-light'
@@ -150,6 +153,10 @@ const CanvasPage = () => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
+        onNodeDragStart={(event, node) => {
+          // Custom logic to hide description
+          window.dispatchEvent(new CustomEvent('node-drag-start', { detail: { nodeId: node.id } }));
+        }}
         fitView
         nodeTypes={nodeTypes}
         style={{ height: '100vh', width: '100vw' }}
