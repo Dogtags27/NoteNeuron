@@ -165,8 +165,8 @@ function EditableRectangleNode({ id, data, isConnectable }) {
                 background: 'transparent',
                 border: 'none',
             }}
-            minWidth={100}
-            minHeight={80}
+            minWidth={90}
+            minHeight={60}
             onResize={(event, params) => {
                 data.updateNode(id, { width: params.width, height: params.height });
             }}
@@ -297,7 +297,7 @@ function EditableRectangleNode({ id, data, isConnectable }) {
         key={color}
         onClick={() => {
           const themeKey = theme.palette.mode === 'dark' ? 'darkColor' : 'lightColor';
-          data.updateNode(id, { [themeKey]: color });
+          data.updateNode(id, { darkColor: color, lightColor: color });
           setShowColorPicker(false);
         }}
         style={{

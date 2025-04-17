@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import EditableRectangleNode from '../components/CanvasNodes/EditableRectangleNode';
 import EditableDiamondNode from '../components/CanvasNodes/EditableDiamondNode';
 import '../components/CanvasNodes/EditableRectangleNode.css';
-import { useCallback, useState, memo } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 
 const nodeTypes = {
   editableRectangle: EditableRectangleNode,
@@ -17,7 +17,8 @@ const nodeTypes = {
 const CanvasPage = () => {
   const { id } = useParams();
   const theme = useTheme();
-  const [isDraggingNode, setIsDraggingNode] = useState(false);
+  const isDarkMode = theme.palette.mode === 'dark';
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
 
   const toolbar_classname = theme.palette.mode === 'light'
     ? 'toolbar-transparent-light'
@@ -36,6 +37,8 @@ const CanvasPage = () => {
         title: '',
         description: '',
         link: '',
+        darkColor: '#cce5ff',
+        lightColor: '#cce5ff',
         updateNode: (id, newData) => {
           setNodes((nds) =>
             nds.map((node) =>
@@ -103,6 +106,8 @@ const CanvasPage = () => {
   }, [setNodes]);
 
   const handleAddRectangle = useCallback(() => {
+    const colors = ['#ffcccc', '#ffe0b3', '#ffffcc', '#ccffcc', '#cce5ff', '#e0ccff'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
     const newNode = {
       id: `node-${nodeId}`,
       type: 'editableRectangle',
@@ -116,6 +121,8 @@ const CanvasPage = () => {
         link: '',
         updateNode,
         deleteNode: handleDeleteNode,
+        darkColor: randomColor,
+        lightColor: randomColor,
       },
       style: {
         width: 250,
@@ -127,8 +134,16 @@ const CanvasPage = () => {
     setNodeId((id) => id + 1);
   }, [nodeId, setNodes, updateNode, handleDeleteNode]);
 
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
-    <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
+    <Box sx={{ height: '86vh', width: '98vw', position: 'relative',overflow: 'hidden' }}>
       {/* Floating Toolbar */}
       <div className={toolbar_classname}>
         <button
@@ -145,24 +160,57 @@ const CanvasPage = () => {
           ➕ Rectangle
         </button>
       </div>
-
-      {/* Canvas */}
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
-        onNodeDragStart={(event, node) => {
-          // Custom logic to hide description
-          window.dispatchEvent(new CustomEvent('node-drag-start', { detail: { nodeId: node.id } }));
+      <ReactFlowProvider>
+        {/* Canvas */}
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
+          onNodeDragStart={(event, node) => {
+            // Custom logic to hide description
+            window.dispatchEvent(new CustomEvent('node-drag-start', { detail: { nodeId: node.id } }));
+          }}
+          fitView
+          nodeTypes={nodeTypes}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <Background variant="dots" gap={16} size={2} />
+          {/* Optional: Add zoom and fit view controls */}
+          <Controls position="top-left" />
+          {/* Optional: Add a minimap to navigate the graph */}
+          <MiniMap
+            style={{
+              right: 0,
+              bottom: 0,
+              backgroundColor: isDarkMode ? '#1e1e1e' : '#f5f5f5',
+              border: '1px solid rgba(0,0,0,0.1)',
+              borderRadius: 8,
+              padding: 4,
+            }}
+            nodeColor={(node) => node.data?.darkColor || node.data?.lightColor || '#999'}
+            nodeStrokeColor={(node) => '#555'} // optional: change stroke color
+            nodeBorderRadius={6}
+            nodeStrokeWidth={3}
+          />
+        </ReactFlow>
+      </ReactFlowProvider>
+      <div
+        style={{
+          position: 'fixed',
+          left: cursorPosition.x,
+          top: cursorPosition.y,
+          transform: 'translate(-50%, -50%)',
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          backgroundColor: '#99ccff',
+          boxShadow: '0 0 12px 4px #0077ff',
+          pointerEvents: 'none',
+          zIndex: 9999,
         }}
-        fitView
-        nodeTypes={nodeTypes}
-        style={{ height: '100vh', width: '100vw' }}
-      >
-        <Background variant="dots" gap={16} size={2} />
-      </ReactFlow>
+      />
     </Box>
   );
 };
