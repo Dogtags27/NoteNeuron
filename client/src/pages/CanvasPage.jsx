@@ -6,12 +6,17 @@ import '../styles/Canvas.css';
 import { useTheme } from '@mui/material/styles';
 import EditableRectangleNode from '../components/CanvasNodes/EditableRectangleNode';
 import EditableDiamondNode from '../components/CanvasNodes/EditableDiamondNode';
+import AnimatedGradientEdge from '../components/CanvasNodes/CustomEdges/AnimatedGradientEdge';
 import '../components/CanvasNodes/EditableRectangleNode.css';
 import { useCallback, useState, useEffect } from 'react';
 
 const nodeTypes = {
   editableRectangle: EditableRectangleNode,
   editableDiamond: EditableDiamondNode,
+};
+
+const edgeTypes = {
+  animatedGradient: AnimatedGradientEdge,
 };
 
 const CanvasPage = () => {
@@ -167,16 +172,32 @@ const CanvasPage = () => {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
+          onConnect={(params) => {
+            const sourceNode = nodes.find((node) => node.id === params.source);
+            const targetNode = nodes.find((node) => node.id === params.target);
+
+            const newEdge = {
+              ...params,
+              id: `edge-${params.source}-${params.target}-${Date.now()}`, // ensures uniqueness
+              type: 'animatedGradient',
+              data: {
+                sourceColor: sourceNode?.data?.darkColor || '#000',
+                targetColor: targetNode?.data?.darkColor || '#000',
+              },
+            };
+
+            setEdges((eds) => addEdge(newEdge, eds));
+          }}
           onNodeDragStart={(event, node) => {
             // Custom logic to hide description
             window.dispatchEvent(new CustomEvent('node-drag-start', { detail: { nodeId: node.id } }));
           }}
           fitView
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           style={{ height: '100%', width: '100%' }}
         >
-          <Background variant="dots" gap={16} size={2} />
+          <Background variant="dots" gap={32} size={2} />
           {/* Optional: Add zoom and fit view controls */}
           <Controls position="top-left" />
           {/* Optional: Add a minimap to navigate the graph */}

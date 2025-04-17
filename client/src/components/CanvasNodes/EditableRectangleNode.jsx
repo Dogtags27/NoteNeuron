@@ -1,5 +1,4 @@
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PaletteIcon from '@mui/icons-material/Palette';
@@ -19,7 +18,6 @@ function EditableRectangleNode({ id, data, isConnectable }) {
     const [linkUrl, setLinkUrl] = useState(data.link || '');
     const colorPickerRef = useRef(null);
     const open = Boolean(anchorEl);
-    const [hovered, setHovered] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [showDescription, setShowDescription] = useState(false);
     const [fadeDescription, setFadeDescription] = useState(false);
@@ -33,11 +31,6 @@ function EditableRectangleNode({ id, data, isConnectable }) {
   const handleDescriptionChange = useCallback((e) => {
     data.updateNode(id, { description: e.target.value });
   }, [data, id]);
-
-  const handleLinkClick = () => {
-    setShowLinkInput(true);
-    handleMenuClose(); // Close minibar
-  };
   
   const handleLinkSave = () => {
     if (data.updateNode) {
