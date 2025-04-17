@@ -15,7 +15,7 @@
     padding: 12px;
   
     background-color: rgba(62, 189, 243, 0.15); /* subtle white */
-    backdrop-filter: blur(1px);                /* glassy blur */
+    backdrop-filter: blur(2px);                /* glassy blur */
     -webkit-backdrop-filter: blur(1px);        /* Safari support */
     border: 1px solid rgba(255, 255, 255, 0.18);
   }
@@ -37,7 +37,7 @@
     padding: 12px;
   
     background-color: rgba(255, 255, 255, 0.1); /* subtle white */
-    backdrop-filter: blur(1px);                /* glassy blur */
+    backdrop-filter: blur(2px);                /* glassy blur */
     -webkit-backdrop-filter: blur(1px);        /* Safari support */
     border: 1px solid rgba(255, 255, 255, 0.18);
   }

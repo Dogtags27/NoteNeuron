@@ -6,7 +6,7 @@ import '../styles/Canvas.css';
 import { useTheme } from '@mui/material/styles';
 import EditableRectangleNode from '../components/CanvasNodes/EditableRectangleNode';
 import '../components/CanvasNodes/EditableRectangleNode.css';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, memo } from 'react';
 
 const nodeTypes = {
   editableRectangle: EditableRectangleNode,
@@ -32,6 +32,7 @@ const CanvasPage = () => {
       data: {
         title: '',
         description: '',
+        link: '',
         updateNode: (id, newData) => {
           setNodes((nds) =>
             nds.map((node) =>
@@ -51,13 +52,28 @@ const CanvasPage = () => {
         },
         deleteNode: handleDeleteNode,
       },
+      resizable: true,
     },
   ]);
 
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const onNodesChange = useCallback((changes) => {
-    setNodes((nds) => applyNodeChanges(changes, nds));
+    setNodes((nds) =>
+      applyNodeChanges(changes, nds).map((node) => {
+        if (node.width && node.height) {
+          return {
+            ...node,
+            style: {
+              ...node.style,
+              width: node.width,
+              height: node.height,
+            },
+          };
+        }
+        return node;
+      })
+    );
   }, []);
 
   const updateNode = useCallback((id, newData) => {
@@ -71,6 +87,11 @@ const CanvasPage = () => {
                 ...newData,
                 updateNode,
                 deleteNode: handleDeleteNode,
+              },
+              style: {
+                ...node.style,
+                width: newData.width || node.style?.width,
+                height: newData.height || node.style?.height,
               },
             }
           : node
@@ -89,9 +110,15 @@ const CanvasPage = () => {
       data: {
         title: '',
         description: '',
+        link: '',
         updateNode,
         deleteNode: handleDeleteNode,
       },
+      style: {
+        width: 250,
+        height: 100,
+      },
+      resizable: true,
     };
     setNodes((nds) => [...nds, newNode]);
     setNodeId((id) => id + 1);
@@ -127,7 +154,7 @@ const CanvasPage = () => {
         nodeTypes={nodeTypes}
         style={{ height: '100vh', width: '100vw' }}
       >
-        <Background variant="dots" gap={16} size={1} />
+        <Background variant="dots" gap={16} size={2} />
       </ReactFlow>
     </Box>
   );
