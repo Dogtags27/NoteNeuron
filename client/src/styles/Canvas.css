@@ -41,4 +41,19 @@
     -webkit-backdrop-filter: blur(1px);        /* Safari support */
     border: 1px solid rgba(255, 255, 255, 0.18);
   }
-  
+  /* Default light mode styles for label input */
+  .label-input-box {
+    font-size: 12px;
+    padding: 5px;
+    width: 120px; /* Fixed width */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Dark mode styles */
+  body[data-theme='dark'] .label-input-box {
+    background-color: #333 !important;
+    color: white !important;
+  }

@@ -356,7 +356,7 @@ function EditableRectangleNode({ id, data, isConnectable }) {
         onChange={(e) => {
           const customColor = e.target.value;
           const themeKey = theme.palette.mode === 'dark' ? 'darkColor' : 'lightColor';
-          data.updateNode(id, { [themeKey]: customColor });
+          data.updateNode(id, { darkColor: color, lightColor: color });
           setShowColorPicker(false);
         }}
         style={{
