@@ -176,7 +176,8 @@ function EditableDiamondNode({ id, data, isConnectable }) {
                 onChange={(e) => {
                   const custom = e.target.value;
                   const key = theme.palette.mode === 'dark' ? 'darkColor' : 'lightColor';
-                  data.updateNode(id, { [key]: custom });
+                  
+                  data.updateNode(id, { darkColor: custom, lightColor: custom });
                   setShowColorPicker(false);
                 }}
                 style={{

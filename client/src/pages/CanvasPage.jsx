@@ -9,14 +9,26 @@ import EditIcon from '@mui/icons-material/Edit';
 import LabelIcon from '@mui/icons-material/Label';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditableRectangleNode from '../components/CanvasNodes/EditableRectangleNode';
-import EditableDiamondNode from '../components/CanvasNodes/EditableDiamondNode';
+import EditableNodeWrapper from '../components/NewCanvasNodes/EditableNodeWrapper';
 import AnimatedGradientEdge from '../components/CanvasNodes/CustomEdges/AnimatedGradientEdge';
 import '../components/CanvasNodes/EditableRectangleNode.css';
 import { useCallback, useState, useEffect } from 'react';
+import { renderShape } from '../components/NewCanvasNodes/shapeUtils';
+import { Button } from '@mui/material'
+import CropSquareIcon from '@mui/icons-material/CropSquare';
+import ChangeHistoryIcon from '@mui/icons-material/ChangeHistory';
+import DataObjectIcon from '@mui/icons-material/DataObject';
+import StorageIcon from '@mui/icons-material/Storage';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import HexagonIcon from '@mui/icons-material/Hexagon';
+import CloudIcon from '@mui/icons-material/Cloud';
+import TerminalIcon from '@mui/icons-material/Terminal';
 
 const nodeTypes = {
-  editableRectangle: EditableRectangleNode,
-  editableDiamond: EditableDiamondNode,
+  // editableRectangle: EditableRectangleNode,
+  editableNode: EditableNodeWrapper,
 };
 
 const edgeTypes = {
@@ -46,7 +58,7 @@ const CanvasPage = () => {
   const [nodes, setNodes] = useState([
     {
       id: 'node-1',
-      type: 'editableRectangle',
+      type: 'editableNode',
       position: { x: 100, y: 150 },
       data: {
         title: '',
@@ -76,7 +88,41 @@ const CanvasPage = () => {
       resizable: true,
     },
   ]);
-
+  
+  const buttonStyle = {
+    m: 0.5,
+    px: 1.5,
+    py: 1,
+    borderRadius: '10px',
+    background: isDarkMode
+      ? 'rgba(255,255,255,0.08)'
+      : 'rgba(0,0,0,0.04)',
+    color: isDarkMode ? '#fff' : '#111',
+    backdropFilter: 'blur(8px)',
+    border: isDarkMode
+      ? '1px solid rgba(255,255,255,0.2)'
+      : '1px solid rgba(0,0,0,0.1)',
+    boxShadow: isDarkMode
+      ? '0 2px 6px rgba(0,0,0,0.6)'
+      : '0 2px 6px rgba(0,0,0,0.2)',
+    fontSize: '0.85rem',
+    textTransform: 'none',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      background: isDarkMode
+        ? 'rgba(255,255,255,0.15)'
+        : 'rgba(0,0,0,0.08)',
+      boxShadow: isDarkMode
+        ? '0 4px 10px rgba(0,0,0,0.7)'
+        : '0 4px 10px rgba(0,0,0,0.3)',
+    },
+    '&:active': {
+      boxShadow: isDarkMode
+        ? 'inset 0 2px 6px rgba(255,255,255,0.15)'
+        : 'inset 0 2px 6px rgba(0,0,0,0.2)',
+      transform: 'translateY(1px)',
+    },
+  };
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const onNodesChange = useCallback((changes) => {
@@ -128,12 +174,42 @@ const CanvasPage = () => {
     }
   }, [isDarkMode]);
 
-  const handleAddRectangle = useCallback(() => {
+  // const handleAddRectangle = useCallback(() => {
+  //   const colors = ['#ffcccc', '#ffe0b3', '#ffffcc', '#ccffcc', '#cce5ff', '#e0ccff'];
+  //   const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  //   const newNode = {
+  //     id: `node-${nodeId}`,
+  //     type: 'editableRectangle',
+  //     position: {
+  //       x: Math.random() * 600,
+  //       y: Math.random() * 400,
+  //     },
+  //     data: {
+  //       title: '',
+  //       description: '',
+  //       link: '',
+  //       updateNode,
+  //       deleteNode: handleDeleteNode,
+  //       darkColor: randomColor,
+  //       lightColor: randomColor,
+  //     },
+  //     style: {
+  //       width: 250,
+  //       height: 100,
+  //     },
+  //     resizable: true,
+  //   };
+  //   setNodes((nds) => [...nds, newNode]);
+  //   setNodeId((id) => id + 1);
+  // }, [nodeId, setNodes, updateNode, handleDeleteNode]);
+
+  const handleAddEditableNode = useCallback((shapeType = 'trapezium') => {
     const colors = ['#ffcccc', '#ffe0b3', '#ffffcc', '#ccffcc', '#cce5ff', '#e0ccff'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     const newNode = {
       id: `node-${nodeId}`,
-      type: 'editableRectangle',
+      type: 'editableNode',
+      shapeType: shapeType,
       position: {
         x: Math.random() * 600,
         y: Math.random() * 400,
@@ -142,6 +218,7 @@ const CanvasPage = () => {
         title: '',
         description: '',
         link: '',
+        shapeType: shapeType,
         updateNode,
         deleteNode: handleDeleteNode,
         darkColor: randomColor,
@@ -198,20 +275,17 @@ const CanvasPage = () => {
     <Box sx={{ height: '86vh', width: '98vw', position: 'relative',overflow: 'hidden' }}>
       {/* Floating Toolbar */}
       <div className={toolbar_classname}>
-        <button
-          onClick={handleAddRectangle}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '8px',
-            background: '#0077ff',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          ➕ Rectangle
-        </button>
-      </div>
+      <Button onClick={() => handleAddEditableNode('rectangle')} startIcon={<CropSquareIcon />} sx={buttonStyle}>Rectangle</Button>
+      <Button onClick={() => handleAddEditableNode('diamond')} startIcon={<ChangeHistoryIcon />} sx={buttonStyle}>Diamond</Button>
+      <Button onClick={() => handleAddEditableNode('parallelogram')} startIcon={<DataObjectIcon />} sx={buttonStyle}>Data Node</Button>
+      <Button onClick={() => handleAddEditableNode('cylinder-vertical')} startIcon={<StorageIcon />} sx={buttonStyle}>Database</Button>
+      <Button onClick={() => handleAddEditableNode('cylinder-horizontal')} startIcon={<SwapVertIcon />} sx={buttonStyle}>Queue</Button>
+      <Button onClick={() => handleAddEditableNode('ellipse')} startIcon={<RadioButtonUncheckedIcon />} sx={buttonStyle}>Ellipse</Button>
+      <Button onClick={() => handleAddEditableNode('arrowhead-right')} startIcon={<ArrowForwardIcon />} sx={buttonStyle}>Arrowhead</Button>
+      <Button onClick={() => handleAddEditableNode('hexagon')} startIcon={<HexagonIcon />} sx={buttonStyle}>Hexagon</Button>
+      <Button onClick={() => handleAddEditableNode('cloud')} startIcon={<CloudIcon />} sx={buttonStyle}>Cloud</Button>
+      <Button onClick={() => handleAddEditableNode('terminal-icon')} startIcon={<TerminalIcon />} sx={buttonStyle}>Terminal</Button>
+    </div>
       <ReactFlowProvider>
         {/* Canvas */}
         <ReactFlow
@@ -255,19 +329,33 @@ const CanvasPage = () => {
           <Controls position="top-left" />
           {/* Optional: Add a minimap to navigate the graph */}
           <MiniMap
-            style={{
-              right: 0,
-              bottom: 0,
-              backgroundColor: isDarkMode ? '#1e1e1e' : '#f5f5f5',
-              border: '1px solid rgba(0,0,0,0.1)',
-              borderRadius: 8,
-              padding: 4,
-            }}
-            nodeColor={(node) => node.data?.darkColor || node.data?.lightColor || '#999'}
-            nodeStrokeColor={(node) => '#555'} // optional: change stroke color
-            nodeBorderRadius={6}
-            nodeStrokeWidth={3}
-          />
+  style={{
+    right: 0,
+    bottom: 0,
+    backgroundColor: isDarkMode ? '#1e1e1e' : '#f5f5f5',
+    border: '1px solid rgba(0,0,0,0.1)',
+    borderRadius: 8,
+    padding: 4,
+  }}
+  nodeColor={(node) => node.data?.darkColor || node.data?.lightColor || '#999'}
+  nodeStrokeColor={(node) => '#555'}
+  nodeBorderRadius={6}
+  nodeStrokeWidth={3}
+  renderNode={(node) => {
+    const shapeType = node.data?.shapeType;  // Get the shape type from node data
+    const width = node.width || 100;  // Set default width if not defined
+    const height = node.height || 100; // Set default height if not defined
+    const fill = node.data?.darkColor || node.data?.lightColor || '#999';  // Use color based on node data
+
+    // Render the shape based on shapeType
+    return (
+      <svg width={width} height={height}>
+        {renderShape(shapeType, { width, height, fill, borderColor: '#555' })}
+      </svg>
+    );
+  }}
+/>
+
         </ReactFlow>
         {selectedEdge && (
           <div
